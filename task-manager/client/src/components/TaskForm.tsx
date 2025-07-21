@@ -1,45 +1,32 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 interface TaskFormProps {
-  onAdd: (task: { title: string; description: string }) => void;
+  onTaskAdded: () => void;
 }
 
-const TaskForm = ({ onAdd }: TaskFormProps) => {
-  const [task, setTask] = useState({ title: '', description: '' });
+const TaskForm: React.FC<TaskFormProps> = ({ onTaskAdded }) => {
+  const [text, setText] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setTask(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (task.title.trim()) {
-      onAdd(task);
-      setTask({ title: '', description: '' });
-    }
+    if (!text.trim()) return;
+    await axios.post('http://localhost:5000/api/tasks', { text });
+    setText('');
+    onTaskAdded();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
+    <form onSubmit={handleSubmit} className="mb-4 flex gap-2">
       <input
         type="text"
-        name="title"
-        value={task.title}
-        onChange={handleChange}
-        placeholder="Task title"
-        className="border p-2 w-full mb-2"
-        required
-      />
-      <textarea
-        name="description"
-        value={task.description}
-        onChange={handleChange}
-        placeholder="Task description"
-        className="border p-2 w-full mb-2"
+        className="border rounded p-2 flex-grow"
+        placeholder="Enter task..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
       />
       <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Add Task
+        Add
       </button>
     </form>
   );
