@@ -16,7 +16,7 @@ const TaskManager: React.FC = () => {
   const { user, logout } = useAuth(); // Get user and logout from auth context
 
   const refreshTasks = () => setRefresh(!refresh);
-  console.log()
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
