@@ -116,11 +116,13 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
 
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg shadow-lg">
+    // The main container for the task list. Removed bg-gray-800 and shadow-lg from here
+    // as the parent div in App.tsx now handles the background and spacing.
+    <div className="p-4 rounded-lg"> {/* Adjusted padding */}
       {tasks.length > 0 ? (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <div key={task._id} className="bg-gray-700 p-4 rounded-md shadow flex flex-col justify-between">
+            <div key={task._id} className="bg-gray-700 p-4 rounded-md shadow flex flex-col justify-between w-full"> {/* Added w-full */}
               {editingId === task._id ? (
                 <div>
                   <input
@@ -168,7 +170,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
           ))}
         </div>
       ) : (
-        <p className="text-gray-500">No tasks found for this day.</p>
+        <p className="text-gray-500 text-center">No tasks found for this day.</p>
       )}
     </div>
   );

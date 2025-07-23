@@ -87,6 +87,7 @@ const TaskManager: React.FC = () => {
 
       {/* Main content area */}
       <div className="flex flex-col md:flex-row gap-8 flex-grow">
+        {/* Left sidebar for TaskForm */}
         <div className="bg-white text-black rounded-lg shadow-lg p-6 w-full md:w-1/3">
           <h2 className="text-xl font-bold mb-4">📅 Task Manager</h2>
           <input
@@ -97,8 +98,10 @@ const TaskManager: React.FC = () => {
           />
           <TaskForm onTaskCreated={refreshTasks} selectedDate={selectedDate} />
         </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold mb-2">Tasks for {selectedDate}</h3>
+        
+        {/* Right content area for TaskList - Added padding and centered heading */}
+        <div className="flex-1 px-6 py-4"> {/* Added horizontal and vertical padding */}
+          <h3 className="text-2xl font-bold mb-6 text-center text-white">Tasks for {selectedDate}</h3> {/* Centered and made heading larger */}
           <TaskList selectedDate={selectedDate} refreshTrigger={refresh} />
         </div>
       </div>
