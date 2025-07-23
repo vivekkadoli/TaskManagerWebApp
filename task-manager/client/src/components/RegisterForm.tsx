@@ -40,8 +40,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
   };
 
   return (
-    // Removed transform transition-all duration-200 ease-in-out hover:scale-105 from this div
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full">
+    // Added max-w-md to limit the form's width
+    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Join Us!</h2>
       <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
         <div>

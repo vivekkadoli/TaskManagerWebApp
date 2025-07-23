@@ -118,8 +118,9 @@ const App: React.FC = () => {
     return (
       // Modified this wrapper div to create a two-column layout for auth forms
       <div className="min-h-screen bg-gray-900 flex flex-col md:flex-row">
-        {/* Left side: Modern Design Section */}
-        <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-700 to-purple-800 flex items-center justify-center p-8 text-center">
+        {/* Left side: Modern Design Section - Now covers 80% */}
+        {/* Added flex-grow to ensure it takes remaining space */}
+        <div className="w-full md:w-4/5 bg-gradient-to-br from-blue-700 to-purple-800 flex items-center justify-center p-8 text-center flex-grow">
           <div className="text-white">
             <h1 className="text-5xl font-extrabold mb-4 animate-fade-in-up">Welcome to TaskFlow!</h1>
             <p className="text-xl leading-relaxed opacity-90 animate-fade-in-down">
@@ -133,9 +134,10 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right side: Authentication Forms */}
-        {/* Added flex items-center justify-center to center the form vertically and horizontally within its column */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-4">
+        {/* Right side: Authentication Forms - Now covers 20% and is pushed to the right */}
+        {/* Changed md:w-1/5 to md:w-1/4 and added min-w-[320px] to ensure forms are not cut off */}
+        {/* Added flex-shrink-0 to prevent this column from shrinking */}
+        <div className="w-full md:w-1/4 min-w-[320px] flex items-center justify-center p-4 flex-shrink-0">
           {showForgot ? (
             <ForgotPasswordForm
               onSwitch={() => {

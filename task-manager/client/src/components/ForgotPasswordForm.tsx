@@ -40,7 +40,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
   };
 
   return (
-    // Removed transform transition-all duration-300 hover:scale-105 from this div
+    // Removed max-w-md to allow the form to fill its container more effectively
     <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Reset Your Password</h2>
       <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}

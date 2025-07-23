@@ -32,8 +32,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
   };
 
   return (
-    // Removed transform transition-all duration-300 hover:scale-105
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full">
+    // Added max-w-md to limit the form's width
+    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Welcome Back!</h2>
       <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
         <div>
@@ -43,7 +43,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
           <input
             type="email"
             id="email"
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition duration-200 ease-in-out bg-gray-700 text-white placeholder-gray-400" 
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition duration-200 ease-in-out bg-gray-700 text-white placeholder-gray-400"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your.email@example.com"
