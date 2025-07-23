@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../auth/useAuth';
-import axios from 'axios';
+import axios from 'axios'; // Ensure axios is imported if used for delete/put
 
 type TaskType = {
   _id: string;
@@ -11,7 +11,7 @@ type TaskType = {
 
 type TaskListProps = {
   selectedDate?: string;
-  refreshTrigger?: boolean; // New prop to trigger re-fetch
+  refreshTrigger?: boolean; // Added prop to trigger refresh
 };
 
 const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => {
@@ -23,15 +23,28 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
 
   const fetchTasks = useCallback(async () => {
     setError('');
+    // Only fetch if user is logged in
+    if (!user || !user.token) {
+      setTasks([]); // Clear tasks if no user is logged in
+      return;
+    }
+
     try {
       const response = await fetch(`/api/tasks?date=${selectedDate}`, {
         headers: {
-          Authorization: `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user.token}`, // Ensure token is used
         },
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        // Handle specific errors, e.g., 401 for unauthorized
+        if (response.status === 401) {
+          setError('Session expired or unauthorized. Please log in again.');
+          // Optionally, trigger logout if unauthorized
+          // logout();
+        } else {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
       }
 
       const data = await response.json();
@@ -42,122 +55,109 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       setTasks(data);
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to load tasks';
+        error instanceof Error ? error.message : 'Failed to fetch tasks.';
+      console.error("Error fetching tasks:", error);
       setError(errorMessage);
-      setTasks([]);
     }
-  }, [selectedDate, user]);
+  }, [selectedDate, user]); // Depend on selectedDate and user for re-fetching
 
+  // Effect to trigger fetchTasks whenever selectedDate, user, or refreshTrigger changes
   useEffect(() => {
-    if (user) {
-      fetchTasks();
-    }
-    // Add refreshTrigger to the dependency array
-  }, [fetchTasks, user, refreshTrigger]); 
-
-  const handleDelete = async (taskId: string) => {
-    setError('');
-    try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Delete failed: ${response.status} ${response.statusText}`);
-      }
-
-      setTasks((prev) => prev.filter((task) => task._id !== taskId));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to delete task';
-      setError(errorMessage);
-    }
-  };
+    fetchTasks();
+  }, [fetchTasks, refreshTrigger]); // Added refreshTrigger here
 
   const handleEdit = (task: TaskType) => {
     setEditingId(task._id);
     setEditValue(task.task);
   };
 
-  const handleEditSave = async (taskId: string) => {
-    setError('');
-    if (!editValue.trim()) {
-      setError('Task description cannot be empty.');
-      return;
-    }
+  const handleSaveEdit = async (id: string) => {
+    if (!editValue.trim() || !user || !user.token) return;
+
     try {
-      await axios.put(`/api/tasks/${taskId}`, { task: editValue }, {
+      await axios.put(`/api/tasks/${id}`, { task: editValue }, {
         headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
+          Authorization: `Bearer ${user.token}`
+        }
       });
       setEditingId(null);
       setEditValue('');
-      fetchTasks(); // Re-fetch tasks to show the updated task
-    } catch {
-      setError('Failed to update task');
+      fetchTasks(); // Re-fetch tasks after successful edit
+    } catch (error) {
+      console.error('Error updating task:', error);
+      setError('Failed to update task.');
     }
   };
 
-  if (!user) {
-    return <p className="text-center text-gray-500">Please log in to view your tasks.</p>;
+  const handleDelete = async (id: string) => {
+    if (!user || !user.token) return;
+
+    try {
+      await axios.delete(`/api/tasks/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      });
+      fetchTasks(); // Re-fetch tasks after successful delete
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      setError('Failed to delete task.');
+    }
+  };
+
+  if (error) {
+    return <p className="text-red-500 text-center mt-4">{error}</p>;
   }
+
+  // Display message if no user is logged in
+  if (!user) {
+    return <p className="text-gray-400 text-center mt-4">Please log in to view your tasks.</p>;
+  }
+
 
   return (
     <div className="p-4 bg-gray-800 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-white">Your Tasks</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {Array.isArray(tasks) && tasks.length > 0 ? (
+      {tasks.length > 0 ? (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <div
-              key={task._id}
-              className="bg-gray-700 shadow-md rounded-xl p-4 border-l-4 border-blue-500 transition hover:shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-            >
+            <div key={task._id} className="bg-gray-700 p-4 rounded-md shadow flex flex-col justify-between">
               {editingId === task._id ? (
-                <div className="flex-grow w-full">
+                <div>
                   <input
                     type="text"
                     value={editValue}
-                    onChange={e => setEditValue(e.target.value)}
-                    className="px-3 py-2 rounded w-full text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-full px-3 py-2 rounded text-black mb-2"
                   />
-                  <div className="flex gap-2 mt-3 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleEditSave(task._id)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex-grow sm:flex-grow-0"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200 flex-grow sm:flex-grow-0"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleSaveEdit(task._id)}
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition mt-2 ml-2"
+                  >
+                    Cancel
+                  </button>
                 </div>
               ) : (
                 <>
-                  <div className="flex-grow">
-                    <h3 className="text-lg font-semibold text-white">{task.task}</h3>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Due: {task.date}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 mt-3 sm:mt-0">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{task.task}</h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Due: {task.date}
+                  </p>
+                  <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => handleEdit(task)}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-200"
+                      className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(task._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
                     >
                       Delete
                     </button>
@@ -168,7 +168,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
           ))}
         </div>
       ) : (
-        <p className="text-gray-400 text-center py-8">No tasks found for this day. Add one above! 🎉</p>
+        <p className="text-gray-500">No tasks found for this day.</p>
       )}
     </div>
   );
