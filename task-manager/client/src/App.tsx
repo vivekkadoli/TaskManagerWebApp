@@ -3,6 +3,7 @@ import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
+import ForgotPasswordForm from './components/ForgotPasswordForm'; // Import the new component
 import { AuthProvider } from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
 
@@ -26,7 +27,7 @@ const TaskManager: React.FC = () => {
       </div>
       <div className="flex-1">
         <h3 className="text-lg font-semibold mb-2">Tasks for {selectedDate}</h3>
-        <TaskList selectedDate={selectedDate} />
+        <TaskList selectedDate={selectedDate} refreshTrigger={refresh} /> {/* Pass refreshTrigger to TaskList */}
       </div>
     </div>
   );
@@ -35,12 +36,29 @@ const TaskManager: React.FC = () => {
 const App: React.FC = () => {
   const { user } = useAuth();
   const [showLogin, setShowLogin] = useState(true);
+  const [showForgot, setShowForgot] = useState(false); // State to control ForgotPasswordForm visibility
 
   if (!user) {
+    if (showForgot) {
+      return (
+        <ForgotPasswordForm
+          onSwitch={() => {
+            setShowForgot(false); // Hide forgot password form
+            setShowLogin(true); // Show login form
+          }}
+        />
+      );
+    }
     return showLogin ? (
-      <LoginForm onSwitch={() => setShowLogin(false)} />
+      <LoginForm
+        onSwitch={() => setShowLogin(false)} // Switch to Register
+        onForgot={() => {
+          setShowForgot(true); // Show Forgot Password
+          setShowLogin(false); // Hide Login
+        }}
+      />
     ) : (
-      <RegisterForm onSwitch={() => setShowLogin(true)} />
+      <RegisterForm onSwitch={() => setShowLogin(true)} /> // Switch to Login
     );
   }
 

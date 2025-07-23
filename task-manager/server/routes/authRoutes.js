@@ -39,4 +39,23 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/reset-password', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ message: 'Password reset successful' });
+  } catch (err) {
+    console.error('Password reset error:', err); // Log the actual error for debugging
+    res.status(500).json({ message: 'Password reset failed due to a server error.' });
+  }
+});
+
 export default router;
