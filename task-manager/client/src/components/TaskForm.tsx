@@ -1,32 +1,44 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../auth/useAuth';
 
-interface TaskFormProps {
-  onTaskAdded: () => void;
+interface Props {
+  onTaskCreated: () => void;
+  selectedDate: string;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ onTaskAdded }) => {
-  const [text, setText] = useState('');
+const TaskForm: React.FC<Props> = ({ onTaskCreated, selectedDate }) => {
+  const [task, setTask] = useState('');
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    await axios.post('http://localhost:5000/api/tasks', { text });
-    setText('');
-    onTaskAdded();
+    if (!task.trim()) return;
+
+    try {
+      await axios.post('/api/tasks', { task, date: selectedDate }, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`
+        }
+      });
+      setTask('');
+      onTaskCreated();
+    } catch (error) {
+      console.error('Error creating task', error);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 flex gap-2">
+    <form onSubmit={handleSubmit} className="space-y-2">
       <input
         type="text"
-        className="border rounded p-2 flex-grow"
         placeholder="Enter task..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+        value={task}
+        onChange={(e) => setTask(e.target.value)}
+        className="px-3 py-2 rounded w-full"
       />
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Add
+      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-full">
+        Add Task
       </button>
     </form>
   );
