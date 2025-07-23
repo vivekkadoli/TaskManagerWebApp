@@ -34,8 +34,6 @@ const TaskManager: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col">
       {/* Header with user info and dropdown - Now fixed at top right */}
-      {/* Added 'fixed top-0 right-0' to make it fixed relative to the viewport */}
-      {/* Increased z-index to z-20 to ensure it stays on top of other content */}
       <header className="fixed top-0 right-0 w-full p-4 z-20 flex justify-end">
         {user && (
           <div className="relative" ref={dropdownRef}>
@@ -118,27 +116,45 @@ const App: React.FC = () => {
 
   if (!user) {
     return (
-      // This wrapper div ensures the form is centered on the page
-      // It takes full screen height, uses flexbox to center its child.
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        {showForgot ? (
-          <ForgotPasswordForm
-            onSwitch={() => {
-              setShowForgot(false);
-              setShowLogin(true);
-            }}
-          />
-        ) : showLogin ? (
-          <LoginForm
-            onSwitch={() => setShowLogin(false)}
-            onForgot={() => {
-              setShowForgot(true);
-              setShowLogin(false);
-            }}
-          />
-        ) : (
-          <RegisterForm onSwitch={() => setShowLogin(true)} />
-        )}
+      // Modified this wrapper div to create a two-column layout for auth forms
+      <div className="min-h-screen bg-gray-900 flex flex-col md:flex-row">
+        {/* Left side: Modern Design Section */}
+        <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-700 to-purple-800 flex items-center justify-center p-8 text-center">
+          <div className="text-white">
+            <h1 className="text-5xl font-extrabold mb-4 animate-fade-in-up">Welcome to TaskFlow!</h1>
+            <p className="text-xl leading-relaxed opacity-90 animate-fade-in-down">
+              Organize your day, boost your productivity, and achieve your goals effortlessly.
+            </p>
+            <div className="mt-10">
+              <svg className="w-24 h-24 mx-auto text-white opacity-80 animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Right side: Authentication Forms */}
+        {/* Added flex items-center justify-center to center the form vertically and horizontally within its column */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-4">
+          {showForgot ? (
+            <ForgotPasswordForm
+              onSwitch={() => {
+                setShowForgot(false);
+                setShowLogin(true);
+              }}
+            />
+          ) : showLogin ? (
+            <LoginForm
+              onSwitch={() => setShowLogin(false)}
+              onForgot={() => {
+                setShowForgot(true);
+                setShowLogin(false);
+              }}
+            />
+          ) : (
+            <RegisterForm onSwitch={() => setShowLogin(true)} />
+          )}
+        </div>
       </div>
     );
   }

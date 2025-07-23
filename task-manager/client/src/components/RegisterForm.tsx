@@ -40,7 +40,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
   };
 
   return (
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-sm mx-auto transform transition-all duration-300 hover:scale-105">
+    // Removed transform transition-all duration-200 ease-in-out hover:scale-105 from this div
+    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Join Us!</h2>
       <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
         <div>
@@ -50,7 +51,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
           <input
             type="email"
             id="email"
-            // CORRECTED: Changed text-gray-900 to text-white for visibility on dark input background
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition duration-200 ease-in-out bg-gray-700 text-white placeholder-gray-400"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -65,7 +65,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
           <input
             type="password"
             id="password"
-            // CORRECTED: Changed text-gray-900 to text-white for visibility on dark input background
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition duration-200 ease-in-out bg-gray-700 text-white placeholder-gray-400"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -80,7 +79,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
           <input
             type="password"
             id="confirmPassword"
-            // CORRECTED: Changed text-gray-900 to text-white for visibility on dark input background
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition duration-200 ease-in-out bg-gray-700 text-white placeholder-gray-400"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
