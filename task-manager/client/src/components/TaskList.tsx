@@ -111,7 +111,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
 
   // Display message if no user is logged in
   if (!user) {
-    return <p className="text-gray-400 text-center mt-4">Please log in to view your tasks.</p>;
+    return <p className="text-gray-400 text-center mt-4 text-lg font-medium">Please log in to view your tasks.</p>;
   }
 
 
@@ -122,7 +122,9 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       {tasks.length > 0 ? (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <div key={task._id} className="bg-gray-700 p-4 rounded-md shadow flex flex-col justify-between w-full"> {/* Added w-full */}
+            // Added min-h-[120px] to ensure a minimum height for the task card
+            // Added overflow-hidden and text-ellipsis for text overflow handling
+            <div key={task._id} className="bg-gray-700 p-4 rounded-md shadow flex flex-col justify-between w-full min-h-[120px]">
               {editingId === task._id ? (
                 <div>
                   <input
@@ -146,7 +148,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
                 </div>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{task.task}</h3>
+                  {/* Added break-words and overflow-hidden to handle long text */}
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white break-words overflow-hidden">{task.task}</h3>
                   <p className="text-sm text-gray-400 mt-1">
                     Due: {task.date}
                   </p>
@@ -170,7 +173,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 text-center">No tasks found for this day.</p>
+        // Enhanced styling for the "No tasks found" message
+        <p className="text-gray-500 text-center mt-8 p-4 border border-gray-600 rounded-md text-lg font-medium">No tasks found for this day.</p>
       )}
     </div>
   );

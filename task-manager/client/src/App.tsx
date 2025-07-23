@@ -33,8 +33,10 @@ const TaskManager: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col">
-      {/* Header with user info and dropdown */}
-      <header className="flex justify-end p-4 relative z-10">
+      {/* Header with user info and dropdown - Now fixed at top right */}
+      {/* Added 'fixed top-0 right-0' to make it fixed relative to the viewport */}
+      {/* Increased z-index to z-20 to ensure it stays on top of other content */}
+      <header className="fixed top-0 right-0 w-full p-4 z-20 flex justify-end">
         {user && (
           <div className="relative" ref={dropdownRef}>
             <button
@@ -85,10 +87,10 @@ const TaskManager: React.FC = () => {
         )}
       </header>
 
-      {/* Main content area */}
-      <div className="flex flex-col md:flex-row gap-8 flex-grow">
+      {/* Main content area - Added pt-20 to offset for the fixed header */}
+      <div className="flex flex-col md:flex-row gap-8 flex-grow pt-20">
         {/* Left sidebar for TaskForm */}
-        <div className="bg-white text-black rounded-lg shadow-lg p-6 w-full md:w-1/3">
+        <div className="bg-white text-black rounded-lg shadow-lg p-6 w-full md:w-80 flex-shrink-0">
           <h2 className="text-xl font-bold mb-4">📅 Task Manager</h2>
           <input
             type="date"
@@ -99,9 +101,9 @@ const TaskManager: React.FC = () => {
           <TaskForm onTaskCreated={refreshTasks} selectedDate={selectedDate} />
         </div>
         
-        {/* Right content area for TaskList - Added padding and centered heading */}
-        <div className="flex-1 px-6 py-4"> {/* Added horizontal and vertical padding */}
-          <h3 className="text-2xl font-bold mb-6 text-center text-white">Tasks for {selectedDate}</h3> {/* Centered and made heading larger */}
+        {/* Right content area for TaskList */}
+        <div className="flex-1 px-6 py-4">
+          <h3 className="text-2xl font-bold mb-6 text-right text-white">Tasks for {selectedDate}</h3> 
           <TaskList selectedDate={selectedDate} refreshTrigger={refresh} />
         </div>
       </div>
