@@ -39,9 +39,9 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate }) => {
       }
 
       setTasks(data);
-    } catch (err: unknown) {
+    } catch (error) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load tasks';
+        error instanceof Error ? error.message : 'Failed to load tasks';
       setError(errorMessage);
       setTasks([]);
     }
@@ -68,9 +68,9 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate }) => {
       }
 
       setTasks((prev) => prev.filter((task) => task._id !== taskId));
-    } catch (err: unknown) {
+    } catch (error) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete task';
+        error instanceof Error ? error.message : 'Failed to delete task';
       setError(errorMessage);
     }
   };
@@ -91,7 +91,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate }) => {
       setEditingId(null);
       setEditValue('');
       fetchTasks();
-    } catch (err: unknown) {
+    } catch {
       setError('Failed to update task');
     }
   };
