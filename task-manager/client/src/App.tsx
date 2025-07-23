@@ -112,26 +112,29 @@ const App: React.FC = () => {
   const [showForgot, setShowForgot] = useState(false);
 
   if (!user) {
-    if (showForgot) {
-      return (
-        <ForgotPasswordForm
-          onSwitch={() => {
-            setShowForgot(false);
-            setShowLogin(true);
-          }}
-        />
-      );
-    }
-    return showLogin ? (
-      <LoginForm
-        onSwitch={() => setShowLogin(false)}
-        onForgot={() => {
-          setShowForgot(true);
-          setShowLogin(false);
-        }}
-      />
-    ) : (
-      <RegisterForm onSwitch={() => setShowLogin(true)} />
+    return (
+      // This wrapper div ensures the form is centered on the page
+      // It takes full screen height, uses flexbox to center its child.
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        {showForgot ? (
+          <ForgotPasswordForm
+            onSwitch={() => {
+              setShowForgot(false);
+              setShowLogin(true);
+            }}
+          />
+        ) : showLogin ? (
+          <LoginForm
+            onSwitch={() => setShowLogin(false)}
+            onForgot={() => {
+              setShowForgot(true);
+              setShowLogin(false);
+            }}
+          />
+        ) : (
+          <RegisterForm onSwitch={() => setShowLogin(true)} />
+        )}
+      </div>
     );
   }
 
