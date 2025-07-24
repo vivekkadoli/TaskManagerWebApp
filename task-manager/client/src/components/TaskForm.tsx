@@ -9,7 +9,8 @@ interface Props {
 
 const TaskForm: React.FC<Props> = ({ onTaskCreated, selectedDate }) => {
   const [task, setTask] = useState('');
-  const [success, setSuccess] = useState(''); // State for success message
+  const [title, setTitle] = useState('');
+  const [success, setSuccess] = useState('');
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,40 +18,45 @@ const TaskForm: React.FC<Props> = ({ onTaskCreated, selectedDate }) => {
     if (!task.trim()) return;
 
     try {
-      await axios.post('/api/tasks', { task, date: selectedDate }, {
+      await axios.post('/api/tasks', { task, title, date: selectedDate }, {
         headers: {
           Authorization: `Bearer ${user?.token}`
         }
       });
       setTask('');
-      setSuccess('Task added successfully!'); // Set success message
-      setTimeout(() => setSuccess(''), 1500); // Clear message after 1.5 seconds
-      onTaskCreated(); // Trigger task list refresh
+      setTitle('');
+      setSuccess('Task added successfully!');
+      setTimeout(() => setSuccess(''), 1500);
+      onTaskCreated();
     } catch (error) {
       console.error('Error creating task', error);
-      // Optionally, add an error state here as well
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Add New Task</h3>
-      {success && <p className="text-green-600 text-center text-sm mb-2">{success}</p>} {/* Show success message */}
-      <input
-        type="text"
-        placeholder="Enter task description..."
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
-        className="px-4 py-2 rounded-lg border-2 border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-        aria-label="New task description"
-      />
-      <button 
-        type="submit" 
-        className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 font-semibold w-full"
-      >
-        Add Task
-      </button>
-    </form>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Optional title (e.g., Call, Reminder)"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+        <input
+          type="text"
+          placeholder="Enter task description..."
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white py-2 rounded-md hover:from-indigo-600 hover:to-blue-600 shadow font-semibold transition-all"
+        >
+          Add Task
+        </button>
+        {success && <p className="text-green-600 text-center text-sm mt-2">{success}</p>}
+      </form>
   );
 };
 

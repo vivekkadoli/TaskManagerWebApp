@@ -91,9 +91,9 @@ const TaskManager: React.FC = () => {
           <TaskForm onTaskCreated={refreshTasks} selectedDate={selectedDate} />
         </div>
         <div className="flex-1 px-6 py-4">
-          <h3 className="text-2xl font-bold mb-6 text-right">
+          {/* <h3 className="text-2xl font-bold mb-6 text-right">
             Tasks for {selectedDate}
-          </h3>
+          </h3> */}
           <TaskList selectedDate={selectedDate} refreshTrigger={refresh} />
         </div>
       </div>
