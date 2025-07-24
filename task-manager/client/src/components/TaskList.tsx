@@ -5,6 +5,7 @@ import { Pencil, Trash2, Save, XCircle } from 'lucide-react';
 
 interface TaskType {
   _id: string;
+  title?: string;
   task: string;
   date: string;
   userId: string;
@@ -21,6 +22,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   const { user } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [editTitle, setEditTitle] = useState('');
 
   const fetchTasks = useCallback(async () => {
     if (!user?.token) {
@@ -46,6 +48,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       setTasks(data);
     } catch (err) {
       console.error("Task fetch failed", err);
+      setError('Failed to fetch tasks.');
     }
   }, [user, selectedDate]);
 
@@ -56,16 +59,18 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   const handleEdit = (task: TaskType) => {
     setEditingId(task._id);
     setEditValue(task.task);
+    setEditTitle(task.title || '');
   };
 
   const handleSaveEdit = async (id: string) => {
     if (!editValue.trim() || !user?.token) return;
     try {
-      await axios.put(`/api/tasks/${id}`, { task: editValue }, {
+      await axios.put(`/api/tasks/${id}`, { task: editValue, title: editTitle }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setEditingId(null);
       setEditValue('');
+      setEditTitle('');
       fetchTasks();
     } catch (err) {
       console.error("Failed to save task edit", err);
@@ -93,7 +98,7 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   }
 
   return (
-    <div className="w-full h-full px-4 py-4 overflow-y-auto">
+    <div className="w-full h-full px-4 py-4">
       <h2 className="text-xl md:text-2xl font-semibold text-indigo-700 mb-6 flex items-center gap-2">
         📅 Tasks for {selectedDate}
       </h2>
@@ -107,10 +112,19 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
             >
               {editingId === task._id ? (
                 <>
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Title (optional)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 text-lg font-semibold"
+                  />
                   <textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded resize-none"
+                    rows={3}
+                    placeholder="Task description..."
                   />
                   <div className="mt-3 flex gap-3">
                     <button
@@ -129,7 +143,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
                 </>
               ) : (
                 <>
-                  <p className="text-lg text-gray-800">{task.task}</p>
+                  {task.title && <h3 className="font-bold text-xl text-gray-900 mb-2">{task.title}</h3>}
+                  <p className="text-lg text-gray-800 whitespace-pre-wrap">{task.task}</p>
                   <div className="mt-3 flex gap-3">
                     <button
                       onClick={() => handleEdit(task)}

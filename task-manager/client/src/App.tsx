@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
 import RegisterForm from './components/RegisterForm';
@@ -6,100 +6,64 @@ import LoginForm from './components/LoginForm';
 import ForgotPasswordForm from './components/ForgotPasswordForm';
 import { AuthProvider } from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
+import { LogOut } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
   const [refresh, setRefresh] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
   const { user, logout } = useAuth();
 
   const refreshTasks = () => setRefresh(!refresh);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   return (
     <div className="h-screen w-screen flex font-sans overflow-hidden">
       {/* Sidebar */}
-      <div className="w-[340px] bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 border-r border-indigo-200 shadow-md flex-shrink-0 flex flex-col px-6 py-8 text-white">
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-yellow-300 text-3xl">📌</span> My Tasks
-        </h2>
+      <div className="w-[340px] bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 shadow-md flex-shrink-0 flex flex-col text-white">
+        <div className="px-6 py-8 flex-grow overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <span className="text-yellow-300 text-3xl">📌</span> My Tasks
+            </h2>
 
-        <div className="space-y-3 mb-6">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            style={{ colorScheme: 'light' }}
-          />
+            <div className="space-y-3 mb-6">
+            <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                style={{ colorScheme: 'light' }}
+            />
+            </div>
+
+            <TaskForm onTaskCreated={refreshTasks} selectedDate={selectedDate} />
         </div>
 
-        <TaskForm onTaskCreated={refreshTasks} selectedDate={selectedDate} />
+        {/* User Profile Section */}
+        {user && (
+            <div className="px-6 py-4 border-t border-indigo-500 bg-black bg-opacity-20">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex items-center justify-center bg-yellow-400 rounded-full text-indigo-800 text-lg font-bold uppercase">
+                {user.email.charAt(0)}
+                </div>
+                <div className="flex-grow overflow-hidden">
+                <p className="text-sm font-semibold truncate" title={user.email}>{user.email}</p>
+                </div>
+                <button
+                onClick={logout}
+                className="p-2 text-indigo-200 hover:bg-indigo-700 hover:text-white rounded-md transition-colors"
+                title="Logout"
+                >
+                <LogOut size={20} />
+                </button>
+            </div>
+            </div>
+        )}
       </div>
 
       {/* Main content */}
       <div className="flex-1 bg-gradient-to-br from-yellow-50 via-orange-100 to-white px-10 py-8 overflow-hidden">
-        <div className="flex justify-end mb-6">
-          {user && (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-2 text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-full"
-              >
-                <div className="w-8 h-8 flex items-center justify-center bg-blue-500 rounded-full text-sm font-bold uppercase">
-                  {user.email.charAt(0)}
-                </div>
-                <span className="hidden md:block">{user.email}</span>
-                <svg
-                  className={`w-4 h-4 ml-2 transition-transform ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-gray-700 rounded-md shadow-lg py-1 z-50">
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="h-full max-h-[calc(100vh-100px)] overflow-y-auto pr-2">
+        <div className="h-full max-h-screen overflow-y-auto pr-2">
           <TaskList selectedDate={selectedDate} refreshTrigger={refresh} />
         </div>
       </div>

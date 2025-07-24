@@ -4,10 +4,11 @@ import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Route to create a new task, now includes the optional title
 router.post('/', auth, async (req, res) => {
-  const { task, date } = req.body;
+  const { task, date, title } = req.body;
   try {
-    const newTask = new Task({ task, date, userId: req.user.id });
+    const newTask = new Task({ task, title, date, userId: req.user.id });
     await newTask.save();
     res.status(201).json(newTask);
   } catch (err) {
@@ -15,6 +16,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// Route to get all tasks for a specific date
 router.get('/', auth, async (req, res) => {
   const { date } = req.query;
   try {
@@ -25,6 +27,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// Route to delete a task
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
@@ -35,13 +38,13 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Add this PUT route for editing tasks
+// Route to update a task, now includes the title
 router.put('/:id', auth, async (req, res) => {
-  const { task } = req.body;
+  const { task, title } = req.body;
   try {
     const updatedTask = await Task.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      { task },
+      { task, title },
       { new: true }
     );
     if (!updatedTask) return res.status(404).json({ message: 'Task not found' });
