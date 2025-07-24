@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../auth/useAuth';
-import { PlusCircle } from 'lucide-react';
 
 interface Props {
   onTaskCreated: () => void;
@@ -30,7 +29,7 @@ const TaskForm: React.FC<Props> = ({ onTaskCreated, selectedDate }) => {
       );
       setTask('');
       setTitle('');
-      setSuccess('✅ Task added successfully!');
+      setSuccess('Task added successfully!');
       setTimeout(() => setSuccess(''), 1500);
       onTaskCreated();
     } catch (error) {
@@ -39,34 +38,35 @@ const TaskForm: React.FC<Props> = ({ onTaskCreated, selectedDate }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 bg-gradient-to-br from-indigo-50 to-white p-6 rounded-xl shadow-xl"
-    >
-      <h3 className="text-lg font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-        <PlusCircle className="w-5 h-5 text-indigo-600" />
-        Add a New Task
-      </h3>
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <h3 className="text-lg font-semibold text-white mb-2">Add a New Task</h3>
+
       <input
         type="text"
-        placeholder="Optional title (e.g., Call, Reminder)"
+        placeholder="Optional title (e.g. Call, Reminder)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
-      <textarea
+
+      <input
+        type="text"
         placeholder="Describe your task..."
         value={task}
         onChange={(e) => setTask(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none min-h-[80px]"
+        className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
+
       <button
         type="submit"
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition-all"
+        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-md font-semibold transition-all"
       >
-        ➕ Add Task
+        Add Task
       </button>
-      {success && <p className="text-green-600 text-center text-sm mt-2">{success}</p>}
+
+      {success && (
+        <p className="text-green-400 text-sm text-center">{success}</p>
+      )}
     </form>
   );
 };
