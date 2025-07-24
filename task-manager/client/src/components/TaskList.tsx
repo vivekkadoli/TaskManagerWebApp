@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../auth/useAuth';
 import axios from 'axios';
+import { Pencil, Trash2, Save, XCircle } from 'lucide-react';
 
 interface TaskType {
   _id: string;
@@ -43,8 +44,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error('Invalid data');
       setTasks(data);
-    } catch {
-      // silently ignore
+    } catch (err) {
+      console.error("Task fetch failed", err);
     }
   }, [user, selectedDate]);
 
@@ -66,8 +67,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       setEditingId(null);
       setEditValue('');
       fetchTasks();
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Failed to save task edit", err);
     }
   };
 
@@ -78,8 +79,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
         headers: { Authorization: `Bearer ${user.token}` }
       });
       fetchTasks();
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Failed to delete task", err);
     }
   };
 
@@ -92,57 +93,55 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   }
 
   return (
-    <div className="w-full h-full bg-white bg-opacity-90 rounded-xl shadow-xl px-6 py-6 overflow-y-auto">
-      <h2 className="text-center text-2xl font-bold text-indigo-800 mb-6">
-        Tasks for {selectedDate}
+    <div className="w-full h-full px-4 py-4 overflow-y-auto">
+      <h2 className="text-xl md:text-2xl font-semibold text-indigo-700 mb-6 flex items-center gap-2">
+        📅 Tasks for {selectedDate}
       </h2>
 
       {tasks.length > 0 ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {tasks.map((task) => (
             <div
               key={task._id}
-              className="bg-blue-50 border border-indigo-200 rounded-lg p-4 shadow-sm"
+              className="border border-gray-200 rounded-xl p-5 bg-gradient-to-br from-blue-50 to-white shadow hover:shadow-md transition-all"
             >
               {editingId === task._id ? (
                 <>
-                  <input
-                    type="text"
+                  <textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded resize-none"
                   />
-                  <div className="flex gap-2">
+                  <div className="mt-3 flex gap-3">
                     <button
                       onClick={() => handleSaveEdit(task._id)}
-                      className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+                      className="flex items-center gap-1 px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                     >
-                      Save
+                      <Save size={16} /> Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600"
+                      className="flex items-center gap-1 px-4 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
                     >
-                      Cancel
+                      <XCircle size={16} /> Cancel
                     </button>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-gray-800 font-medium">{task.task}</p>
-                  {/* <p className="text-sm text-gray-600 mt-1">📅 {task.date}</p> */}
-                  <div className="mt-2 flex gap-2">
+                  <p className="text-lg text-gray-800">{task.task}</p>
+                  <div className="mt-3 flex gap-3">
                     <button
                       onClick={() => handleEdit(task)}
-                      className="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600"
+                      className="flex items-center gap-1 px-4 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                     >
-                      Edit
+                      <Pencil size={16} /> Edit
                     </button>
                     <button
                       onClick={() => handleDelete(task._id)}
-                      className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
+                      className="flex items-center gap-1 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                     >
-                      Delete
+                      <Trash2 size={16} /> Delete
                     </button>
                   </div>
                 </>
@@ -151,8 +150,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
           ))}
         </div>
       ) : (
-        <p className="text-gray-600 text-center mt-8 text-lg border border-dashed border-gray-300 p-4 rounded-md">
-          No tasks found for this day.
+        <p className="text-gray-600 text-center mt-10 text-lg border border-dashed border-gray-300 p-4 rounded-md">
+          No tasks found for this date.
         </p>
       )}
     </div>
