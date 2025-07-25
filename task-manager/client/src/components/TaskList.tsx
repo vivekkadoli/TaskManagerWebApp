@@ -27,7 +27,6 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   const [editTitle, setEditTitle] = useState('');
   const [filter, setFilter] = useState<FilterMode>('today');
 
-
   const fetchTasks = useCallback(async () => {
     if (!user?.token) {
       setTasks([]);
@@ -167,6 +166,17 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
     groupedTasks[dateKey].push(task);
   }
 
+  // ---------------------- FORMATTING ---------------------
+  const todayStr = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$2-$1-$3');
+
+  const monthName = today.toLocaleDateString('en-US', { month: 'long' });
+
+  // ---------------------- RENDER ---------------------
   const buttonBase = "px-4 py-1 rounded-md font-medium border transition";
   const getButtonClass = (btn: FilterMode) =>
     `${buttonBase} ${filter === btn ? "bg-indigo-600 text-white border-indigo-700" : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"}`;
@@ -185,6 +195,25 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
           Month
         </button>
       </div>
+
+      {/* === FILTER HEADERS === */}
+      {filter === 'today' && (
+        <div className="mb-6 text-center">
+          <h2 className="text-xl font-bold text-indigo-700 mb-2">
+            Today is {todayStr}
+          </h2>
+          <p className="text-gray-800 font-medium">Total Tasks: {filteredTasks.length}</p>
+        </div>
+      )}
+
+      {filter === 'month' && (
+        <div className="mb-6 text-center">
+          <h2 className="text-xl font-bold text-indigo-700 mb-2">
+            {monthName}
+          </h2>
+          <p className="text-gray-800 font-medium">Total Tasks: {filteredTasks.length}</p>
+        </div>
+      )}
 
       {Object.keys(groupedTasks).length > 0 ? (
         Object.entries(groupedTasks).map(([date, dateTasks]) => (
