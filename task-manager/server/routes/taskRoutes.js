@@ -18,9 +18,20 @@ router.post('/', auth, async (req, res) => {
 
 // Route to get all tasks for a specific date
 router.get('/', auth, async (req, res) => {
-  const { date } = req.query;
+  const { date, filter } = req.query;
   try {
-    const tasks = await Task.find({ date, userId: req.user.id }).sort({ createdAt: -1 });
+    let query = { userId: req.user.id };
+
+    if (filter === 'today' && date) {
+      query.date = date;
+    } else if (filter === 'month' && date) {
+      const [dd, mm, yyyy] = date.split('-');
+      const monthRegex = new RegExp(`-${mm}-${yyyy}$`);
+      query.date = { $regex: monthRegex };
+    }
+    // else filter === 'all' → no additional query added
+
+    const tasks = await Task.find(query).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch tasks' });

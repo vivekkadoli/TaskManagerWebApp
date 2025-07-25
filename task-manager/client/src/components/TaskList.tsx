@@ -12,9 +12,11 @@ interface TaskType {
 }
 
 interface TaskListProps {
-  selectedDate?: string;
+  selectedDate: string;
   refreshTrigger?: boolean;
 }
+
+type FilterMode = 'today' | 'all' | 'month';
 
 const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
@@ -23,6 +25,8 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editTitle, setEditTitle] = useState('');
+  const [filter, setFilter] = useState<FilterMode>('today');
+
 
   const fetchTasks = useCallback(async () => {
     if (!user?.token) {
@@ -31,11 +35,11 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
     }
 
     try {
-      const res = await fetch(`/api/tasks?date=${selectedDate}`, {
+      const res = await axios.get(`/api/tasks?date=${selectedDate}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
 
-      if (!res.ok) {
+      if (res.status !== 200) {
         if (res.status === 401) {
           setError('Session expired. Please log in again.');
         } else {
@@ -43,12 +47,26 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
         }
       }
 
-      const data = await res.json();
-      if (!Array.isArray(data)) throw new Error('Invalid data');
-      setTasks(data);
+      const data = res.data;
+      if (!Array.isArray(data)) {
+        console.error("Invalid data format:", data);
+        throw new Error('Invalid data format received for tasks.');
+      }
+
+      const sortedTasks = [...data].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      setTasks(sortedTasks);
+      setError('');
     } catch (err) {
       console.error("Task fetch failed", err);
-      setError('Failed to fetch tasks.');
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || `Failed to fetch tasks: ${err.response.status}`);
+      } else {
+        setError('An unexpected error occurred while fetching tasks.');
+      }
+      setTasks([]);
     }
   }, [user, selectedDate]);
 
@@ -74,6 +92,11 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       fetchTasks();
     } catch (err) {
       console.error("Failed to save task edit", err);
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || `Failed to update task: ${err.response.status}`);
+      } else {
+        setError('An unexpected error occurred while updating task.');
+      }
     }
   };
 
@@ -86,6 +109,11 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
       fetchTasks();
     } catch (err) {
       console.error("Failed to delete task", err);
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || `Failed to delete task: ${err.response.status}`);
+      } else {
+        setError('An unexpected error occurred while deleting task.');
+      }
     }
   };
 
@@ -97,76 +125,142 @@ const TaskList: React.FC<TaskListProps> = ({ selectedDate, refreshTrigger }) => 
     return <p className="text-gray-400 text-center mt-4">Login to see your tasks.</p>;
   }
 
+  // ---------------------- FILTER LOGIC ---------------------
+  const today = new Date(selectedDate);
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  let filteredTasks = tasks;
+
+  if (filter === 'today') {
+    filteredTasks = tasks.filter((task) => {
+      const taskDate = new Date(task.date);
+      return (
+        taskDate.getDate() === today.getDate() &&
+        taskDate.getMonth() === today.getMonth() &&
+        taskDate.getFullYear() === today.getFullYear()
+      );
+    });
+  } else if (filter === 'month') {
+    filteredTasks = tasks.filter((task) => {
+      const taskDate = new Date(task.date);
+      return (
+        taskDate.getMonth() === currentMonth &&
+        taskDate.getFullYear() === currentYear
+      );
+    });
+  }
+
+  // ---------------------- GROUPING LOGIC ---------------------
+  const groupedTasks: { [date: string]: TaskType[] } = {};
+  for (const task of filteredTasks) {
+    const dateKey = new Date(task.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$2-$1-$3');
+
+    if (!groupedTasks[dateKey]) {
+      groupedTasks[dateKey] = [];
+    }
+    groupedTasks[dateKey].push(task);
+  }
+
+  const buttonBase = "px-4 py-1 rounded-md font-medium border transition";
+  const getButtonClass = (btn: FilterMode) =>
+    `${buttonBase} ${filter === btn ? "bg-indigo-600 text-white border-indigo-700" : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"}`;
+
   return (
     <div className="w-full h-full px-4 py-4">
-      <h2 className="text-xl md:text-2xl font-semibold text-indigo-700 mb-6 flex items-center gap-2">
-        📅 Tasks for {selectedDate}
-      </h2>
+      {/* === FILTER BUTTONS === */}
+      <div className="flex justify-center gap-3 mb-8">
+        <button className={getButtonClass('all')} onClick={() => setFilter('all')}>
+          All
+        </button>
+        <button className={getButtonClass('today')} onClick={() => setFilter('today')}>
+          Today
+        </button>
+        <button className={getButtonClass('month')} onClick={() => setFilter('month')}>
+          Month
+        </button>
+      </div>
 
-      {tasks.length > 0 ? (
-        <div className="flex flex-col gap-5">
-          {tasks.map((task) => (
-            <div
-              key={task._id}
-              className="border border-gray-200 rounded-xl p-5 bg-gradient-to-br from-blue-50 to-white shadow hover:shadow-md transition-all"
-            >
-              {editingId === task._id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    placeholder="Title (optional)"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 text-lg font-semibold"
-                  />
-                  <textarea
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded resize-none"
-                    rows={3}
-                    placeholder="Task description..."
-                  />
-                  <div className="mt-3 flex gap-3">
-                    <button
-                      onClick={() => handleSaveEdit(task._id)}
-                      className="flex items-center gap-1 px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                      <Save size={16} /> Save
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="flex items-center gap-1 px-4 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                    >
-                      <XCircle size={16} /> Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {task.title && <h3 className="font-bold text-xl text-gray-900 mb-2">{task.title}</h3>}
-                  <p className="text-lg text-gray-800 whitespace-pre-wrap">{task.task}</p>
-                  <div className="mt-3 flex gap-3">
-                    <button
-                      onClick={() => handleEdit(task)}
-                      className="flex items-center gap-1 px-4 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                    >
-                      <Pencil size={16} /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task._id)}
-                      className="flex items-center gap-1 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      <Trash2 size={16} /> Delete
-                    </button>
-                  </div>
-                </>
-              )}
+      {Object.keys(groupedTasks).length > 0 ? (
+        Object.entries(groupedTasks).map(([date, dateTasks]) => (
+          <div key={date} className="mb-10">
+            <h2 className="text-center text-xl font-bold text-indigo-700 mb-6 relative">
+              <span className="relative z-10 bg-gradient-to-br from-yellow-50 via-orange-100 to-white px-4">
+                {date}
+              </span>
+              <span className="absolute left-0 right-0 top-1/2 h-0.5 bg-gray-900 transform -translate-y-1/2 z-0"></span>
+            </h2>
+
+            <div className="flex flex-col gap-5">
+              {dateTasks.map((task) => (
+                <div
+                  key={task._id}
+                  className="border border-gray-200 rounded-xl p-5 bg-gradient-to-br from-blue-50 to-white shadow hover:shadow-md transition-all"
+                >
+                  {editingId === task._id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        placeholder="Title (optional)"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 text-lg font-semibold"
+                      />
+                      <textarea
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded resize-none"
+                        rows={3}
+                        placeholder="Task description..."
+                      />
+                      <div className="mt-3 flex gap-3">
+                        <button
+                          onClick={() => handleSaveEdit(task._id)}
+                          className="flex items-center gap-1 px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                        >
+                          <Save size={16} /> Save
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="flex items-center gap-1 px-4 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        >
+                          <XCircle size={16} /> Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {task.title && <h3 className="font-bold text-xl text-gray-900 mb-2">{task.title}</h3>}
+                      <p className="text-lg text-gray-800 whitespace-pre-wrap">{task.task}</p>
+                      <div className="mt-3 flex gap-3">
+                        <button
+                          onClick={() => handleEdit(task)}
+                          className="flex items-center gap-1 px-4 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                        >
+                          <Pencil size={16} /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(task._id)}
+                          className="flex items-center gap-1 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          <Trash2 size={16} /> Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))
       ) : (
         <p className="text-gray-600 text-center mt-10 text-lg border border-dashed border-gray-300 p-4 rounded-md">
-          No tasks found for this date.
+          No tasks found for this filter.
         </p>
       )}
     </div>
