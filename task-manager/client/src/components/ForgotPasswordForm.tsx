@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 type ForgotPasswordFormProps = {
-  onSwitch: () => void; // Function to switch back to Login form
+  onSwitch: () => void;
 };
 
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => {
@@ -28,8 +28,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
       setEmail('');
       setNewPassword('');
       setConfirmPassword('');
-      // Optionally, switch back to login form after successful reset
-      // onSwitch();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.message || 'Password reset failed!');
@@ -40,10 +38,9 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
   };
 
   return (
-    // Removed max-w-md to allow the form to fill its container more effectively
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full">
+    <div className="text-gray-900 w-full">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Reset Your Password</h2>
-      <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
             Email Address

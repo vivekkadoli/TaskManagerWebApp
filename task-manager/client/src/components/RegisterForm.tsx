@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 type RegisterFormProps = {
-  onSwitch: () => void; // Function to switch to Login form
+  onSwitch: () => void;
 };
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
@@ -28,8 +28,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
       setEmail('');
       setPassword('');
       setConfirmPassword('');
-      // Optionally, switch to login form automatically after successful registration
-      // onSwitch();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.message || 'Registration failed!');
@@ -40,10 +38,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
   };
 
   return (
-    // Added max-w-md to limit the form's width
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md">
+    <div className="text-gray-900 w-full">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Join Us!</h2>
-      <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
             Email Address

@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../auth/useAuth';
 
 type LoginFormProps = {
-  onSwitch: () => void; // Function to switch to Register form
-  onForgot: () => void; // Function to switch to Forgot Password form
+  onSwitch: () => void;
+  onForgot: () => void;
 };
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
@@ -12,7 +12,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const { login } = useAuth(); // Get login function from auth context
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +20,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
     setSuccess('');
     try {
       const response = await axios.post('/api/auth/login', { email, password });
-      login(response.data); // Store user data (token, email, id) in context and local storage
+      login(response.data);
       setSuccess('Login successful!');
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
@@ -32,10 +32,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot }) => {
   };
 
   return (
-    // Added max-w-md to limit the form's width
-    <div className="bg-white text-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md">
+    <div className="text-gray-900 w-full">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Welcome Back!</h2>
-      <form onSubmit={handleSubmit} className="space-y-6"> {/* Increased spacing */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
             Email Address
