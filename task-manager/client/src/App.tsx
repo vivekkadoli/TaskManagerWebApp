@@ -276,45 +276,54 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
 
-  if (!user) {
-    return (
-      <div className="h-screen w-screen flex flex-row bg-gradient-to-br from-indigo-900 to-sky-800">
-        <div className="w-[70%] h-full text-white flex flex-col justify-center items-start px-20 space-y-10 relative">
-          <div className="absolute w-[250px] h-[250px] bg-indigo-400 opacity-10 rounded-full blur-[80px] top-[-50px] right-[-90px] pointer-events-none"></div>
-          <h1 className="text-6xl font-extrabold leading-tight tracking-tight drop-shadow-lg">
-            Welcome to <span className="text-yellow-300">TaskFlow</span>
-          </h1>
-          <p className="text-xl text-slate-100 max-w-xl leading-relaxed">
-            Organize your day, boost your productivity, and achieve your goals effortlessly.
-          </p>
-        </div>
-        <div className="w-[30%] h-full relative flex items-center justify-center bg-gradient-to-br from-[#e0f2fe] via-[#f0f9ff] to-[#dbeafe] overflow-hidden">
-          <div className="absolute w-[300px] h-[300px] bg-blue-300 opacity-30 rounded-full blur-[120px] top-[-60px] right-[-80px] animate-pulse"></div>
-          <div className="absolute w-40 h-40 bg-indigo-400 opacity-20 rounded-full blur-[80px] bottom-[-60px] left-[-40px] animate-bounce-slow"></div>
-          <div className="w-full h-full flex flex-col items-center justify-center z-10 px-8">
-            <div className="text-center mb-6">
-              <h2 className="text-3xl font-extrabold text-blue-800 tracking-tight mb-2">Access TaskFlow</h2>
-              <p className="text-sm text-gray-600">Stay on top of your productivity</p>
-            </div>
-            <div className="w-full max-w-md space-y-6">
-              {showForgot ? (
-                <ForgotPasswordForm
-                  onSwitch={() => { setShowForgot(false); setShowLogin(true); }}
-                />
-              ) : showLogin ? (
-                <LoginForm
-                  onSwitch={() => setShowLogin(false)}
-                  onForgot={() => { setShowForgot(true); setShowLogin(false); }}
-                />
-              ) : (
-                <RegisterForm onSwitch={() => setShowLogin(true)} />
-              )}
-            </div>
+if (!user) {
+  return (
+    <div className="h-screen w-screen flex flex-row bg-gradient-to-br from-indigo-900 to-sky-800">
+      {/* === LEFT HERO SECTION === */}
+      <div className="w-[70%] h-full text-white flex flex-col justify-center items-start px-20 space-y-10 relative">
+        <div className="absolute w-[250px] h-[250px] bg-indigo-400 opacity-10 rounded-full blur-[80px] top-[-50px] right-[-90px] pointer-events-none"></div>
+        <h1 className="text-6xl font-extrabold leading-tight tracking-tight drop-shadow-lg">
+          Welcome to <span className="text-yellow-300">TaskFlow</span>
+        </h1>
+        <p className="text-xl text-slate-100 max-w-xl leading-relaxed">
+          Organize your day, boost your productivity, and achieve your goals effortlessly.
+        </p>
+      </div>
+
+      {/* === RIGHT SIDE GRAY PANEL === */}
+      <div className="w-[30%] h-full bg-gray-900 text-white flex items-center justify-center px-8">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">
+              Access TaskFlow
+            </h2>
+            <p className="text-sm text-gray-400">Stay on top of your productivity</p>
           </div>
+
+          {showForgot ? (
+            <ForgotPasswordForm
+              onSwitch={() => {
+                setShowForgot(false);
+                setShowLogin(true);
+              }}
+            />
+          ) : showLogin ? (
+            <LoginForm
+              onSwitch={() => setShowLogin(false)}
+              onForgot={() => {
+                setShowForgot(true);
+                setShowLogin(false);
+              }}
+            />
+          ) : (
+            <RegisterForm onSwitch={() => setShowLogin(true)} />
+          )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return <DashboardLayout />;
 };
