@@ -6,21 +6,28 @@ import User from '../models/userModel.js';
 const router = express.Router();
 
 // Register Route
+// Register Route
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, mobile } = req.body;
+  if (!email || !password || !mobile) {
+    return res.status(400).json({ message: 'Email, password, and mobile are required.' });
+  }
+  if (!/^\d{10}$/.test(mobile)) {
+    return res.status(400).json({ message: 'Mobile must be a 10-digit number.' });
+  }
   try {
-    const existingUser = await User.findOne({ email });
+    // Check for existing email OR mobile
+    const existingUser = await User.findOne({ $or: [{ email }, { mobile }] });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-    // The User model's pre('save') hook will handle hashing the plaintext password
-    const user = new User({ email, password });
+    const user = new User({ email, password, mobile });
     await user.save();
 
-    // Generate JWT token upon successful registration (optional, but common)
+    // Generate JWT token upon successful registration (optional)
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.status(201).json({ token, email: user.email, id: user._id });
+
+    res.status(201).json({ token, email: user.email, id: user._id, mobile: user.mobile });
   } catch (err) {
-    // console.error('Registration error:', err);
     res.status(500).json({ message: 'Registration failed' });
   }
 });

@@ -7,6 +7,7 @@ type RegisterFormProps = {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,13 +23,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
       return;
     }
 
+    if (!/^\d{10}$/.test(mobile)) {
+      setError('Mobile must be a 10-digit number.');
+      return;
+    }
+
     try {
-      const response = await axios.post('/api/auth/register', { email, password });
+      const response = await axios.post('/api/auth/register', { email, password, mobile });
       setSuccess(response.data.message || 'Registration successful! Please log in.');
       setEmail('');
+      setMobile('');
       setPassword('');
       setConfirmPassword('');
-    } catch (err) {
+    } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.message || 'Registration failed!');
       } else {
@@ -38,69 +45,72 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
   };
 
   return (
-    <div className="text-white w-full bg-gray-900 p-6 rounded-lg shadow-lg">
-      <h2 className="text-3xl font-extrabold mb-8 text-center">Join Us!</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-1">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your.email@example.com"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-300 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-300 mb-1">
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-        {success && <p className="text-green-500 text-sm text-center">{success}</p>}
-        <button
-          type="submit"
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg transition-all duration-300"
-        >
-          Register
-        </button>
-      </form>
-      <div className="mt-6 text-center">
-        <button
-          onClick={onSwitch}
-          className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg"
-        >
-          Already have an account? <span className="text-yellow-400 underline">Login</span>
-        </button>
-      </div>
-    </div>
+    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto text-white">
+      <h2 className="text-lg font-semibold mb-4">Join Us!</h2>
+      <label>Email Address</label>
+      <input
+        type="email"
+        name="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="your.email@example.com"
+        required
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      <label className="mt-2">Mobile Number</label>
+      <input
+        type="tel"
+        name="mobile"
+        inputMode="numeric"
+        value={mobile}
+        onChange={e => setMobile(e.target.value.replace(/\D/g, ""))}
+        placeholder="10-digit mobile number"
+        required
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+        maxLength={10}
+      />
+
+      <label className="mt-2">Password</label>
+      <input
+        type="password"
+        name="password"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        placeholder="••••••••"
+        required
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      <label className="mt-2">Confirm Password</label>
+      <input
+        type="password"
+        name="confirmPassword"
+        value={confirmPassword}
+        onChange={e => setConfirmPassword(e.target.value)}
+        placeholder="••••••••"
+        required
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      {error && <div className="text-red-400 text-sm my-1">{error}</div>}
+      {success && <div className="text-green-400 text-sm my-1">{success}</div>}
+
+      <button
+        type="submit"
+        className="w-full mt-3 bg-yellow-500 text-black font-bold py-2 px-4 rounded"
+      >
+        Register
+      </button>
+
+      <button
+        type="button"
+        onClick={onSwitch}
+        className="w-full mt-3 text-yellow-400 underline"
+      >
+        Already have an account? Login
+      </button>
+    </form>
   );
 };
 

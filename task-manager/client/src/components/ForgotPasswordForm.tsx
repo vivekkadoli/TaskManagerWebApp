@@ -1,109 +1,131 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios, { AxiosError } from "axios";
 
-type ForgotPasswordFormProps = {
-  onSwitch: () => void;
-};
+type ForgotPasswordFormProps = { onSwitch: () => void };
 
-const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => {
+export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => {
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // No OTP state/logic needed now
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setFormError('');
+    setFormSuccess('');
 
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match.');
+      setFormError("Passwords do not match.");
+      return;
+    }
+    if (!/^\d{10}$/.test(mobile)) {
+      setFormError("Enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!email) {
+      setFormError("Please provide your email.");
       return;
     }
 
     try {
-      const response = await axios.post('/api/auth/reset-password', {
+      await axios.post('/api/auth/reset-password', {
         email,
-        password: newPassword
+        password: newPassword,
       });
-      setSuccess(response.data.message || 'Password reset successful!');
+      setFormSuccess("Password reset successful! You may now log in.");
       setEmail('');
+      setMobile('');
       setNewPassword('');
       setConfirmPassword('');
+      setTimeout(() => {
+        onSwitch(); // Switch to login form
+      }, 1500);
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Password reset failed!');
+      if (axios.isAxiosError(err)) {
+        setFormError(
+          ((err as AxiosError<{ message?: string }>).response?.data?.message) ||
+          "Failed to reset password."
+        );
       } else {
-        setError('An unexpected error occurred.');
+        setFormError("Failed to reset password.");
       }
     }
   };
 
   return (
-    <div className="text-white w-full bg-gray-900 p-6 rounded-lg shadow-lg">
-      <h2 className="text-3xl font-extrabold mb-8 text-center">Reset Password</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-1">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your.email@example.com"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-300 mb-1">
-            New Password
-          </label>
-          <input
-            type="password"
-            id="newPassword"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-300 mb-1">
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            className="w-full px-4 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:ring-yellow-400 focus:border-yellow-400"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-        {success && <p className="text-green-500 text-sm text-center">{success}</p>}
-        <button
-          type="submit"
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg transition-all duration-300"
-        >
-          Reset Password
-        </button>
-      </form>
-      <div className="mt-6 text-center">
-        <button
-          onClick={onSwitch}
-          className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg"
-        >
-          Back to <span className="text-yellow-400 underline">Login</span>
-        </button>
-      </div>
-    </div>
+    <form onSubmit={handleResetSubmit} className="w-full max-w-md mx-auto text-white">
+      <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
+
+      <label>Email Address</label>
+      <input
+        type="email"
+        name="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        required
+        disabled={!!formSuccess}
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      <label className="mt-2">Mobile Number</label>
+      <input
+        type="tel"
+        name="mobile"
+        inputMode="numeric"
+        value={mobile}
+        onChange={e => setMobile(e.target.value.replace(/\D/g, ""))}
+        required
+        disabled={!!formSuccess}
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+        placeholder="10-digit mobile number"
+        maxLength={10}
+      />
+
+      <label className="mt-2">New Password</label>
+      <input
+        type="password"
+        name="newPassword"
+        value={newPassword}
+        onChange={e => setNewPassword(e.target.value)}
+        required
+        disabled={!!formSuccess}
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      <label className="mt-2">Confirm Password</label>
+      <input
+        type="password"
+        name="confirmPassword"
+        value={confirmPassword}
+        onChange={e => setConfirmPassword(e.target.value)}
+        required
+        disabled={!!formSuccess}
+        className="w-full px-3 py-2 border border-gray-700 rounded bg-gray-800 text-white"
+      />
+
+      {formError && <div className="text-red-400 text-sm my-1">{formError}</div>}
+      {formSuccess && <div className="text-green-400 text-sm my-1">{formSuccess}</div>}
+
+      <button
+        type="submit"
+        disabled={!!formSuccess}
+        className="w-full mt-3 bg-yellow-500 text-black font-bold py-2 px-4 rounded"
+      >
+        Reset Password
+      </button>
+
+      <button
+        type="button"
+        onClick={onSwitch}
+        className="w-full mt-3 text-yellow-400 underline"
+      >
+        Back to Login
+      </button>
+    </form>
   );
 };
 
